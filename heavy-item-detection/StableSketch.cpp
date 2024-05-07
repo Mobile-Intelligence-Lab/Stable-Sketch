@@ -91,31 +91,15 @@ void StableSketch::Update(unsigned char* key, val_tp val) {
 }
 
 void StableSketch::Query(val_tp thresh, std::vector<std::pair<key_tp, val_tp> >&results) {
-	myset res;
 	for (int i = 0; i < stable_.width*stable_.depth; i++) {                     
 		if (stable_.counts[i]->count > (int)thresh) {
 			key_tp reskey; 
 			memcpy(reskey.key, stable_.counts[i]->key, stable_.lgn / 8);
-			res.insert(reskey);
-		}
-	}
-	for (auto it = res.begin(); it != res.end(); it++) {
-		val_tp resval = 99999999; val_tp max = 0;
-		for (int j = 0; j < stable_.depth; j++) {
-			unsigned long bucket = MurmurHash64A((*it).key, stable_.lgn / 8, stable_.hardner[j]) % stable_.width;
-			unsigned long index = j * stable_.width + bucket;
-			if (memcmp(stable_.counts[index]->key, (*it).key, stable_.lgn / 8) == 0) {
-				max += stable_.counts[index]->count;			
-			}
-			
-		}
-		if (max != 0)resval = max;
-			key_tp key;
-			memcpy(key.key, (*it).key, stable_.lgn / 8);
 			std::pair<key_tp, val_tp> node;
-			node.first = key;
-			node.second = resval;
+			node.first = reskey;
+			node.second = stable_.counts[i]->count;
 			results.push_back(node);
+		}
 	}
 	std::cout << "results.size = " << results.size() << std::endl;
 }
